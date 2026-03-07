@@ -8,18 +8,29 @@ import (
 )
 
 type Config struct {
-	// Discord
-	DiscordToken         string
-	DiscordCommandPrefix string
-
-	// RabbitMQ
-	RabbitMQURL  string
-	QueueName    string
-	ExchangeName string
-	RoutingKey   string
+	DiscordConfig  DiscordConfig
+	RabbitMQConfig RabbitMQConfig
+	TwitchConfig   TwitchConfig
 
 	// Server
 	WebServerPort string
+}
+
+type DiscordConfig struct {
+	Token         string
+	CommandPrefix string
+}
+
+type RabbitMQConfig struct {
+	URL          string
+	QueueName    string
+	ExchangeName string
+	RoutingKey   string
+}
+
+type TwitchConfig struct {
+	ClientID     string
+	ClientSecret string
 }
 
 func LoadConfig() *Config {
@@ -30,12 +41,20 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		DiscordToken:         os.Getenv("DISCORD_TOKEN"),
-		DiscordCommandPrefix: os.Getenv("DISCORD_COMMAND_PREFIX"),
-		RabbitMQURL:          os.Getenv("RABBITMQ_URL"),
-		QueueName:            os.Getenv("QUEUE_NAME"),
-		ExchangeName:         os.Getenv("EXCHANGE_NAME"),
-		RoutingKey:           os.Getenv("ROUTING_KEY"),
-		WebServerPort:        os.Getenv("WEB_SERVER_PORT"),
+		DiscordConfig: DiscordConfig{
+			Token:         os.Getenv("DISCORD_TOKEN"),
+			CommandPrefix: os.Getenv("DISCORD_COMMAND_PREFIX"),
+		},
+		RabbitMQConfig: RabbitMQConfig{
+			URL:          os.Getenv("RABBITMQ_URL"),
+			QueueName:    os.Getenv("QUEUE_NAME"),
+			ExchangeName: os.Getenv("EXCHANGE_NAME"),
+			RoutingKey:   os.Getenv("ROUTING_KEY"),
+		},
+		TwitchConfig: TwitchConfig{
+			ClientID:     os.Getenv("TWITCH_CLIENT_ID"),
+			ClientSecret: os.Getenv("TWITCH_CLIENT_SECRET"),
+		},
+		WebServerPort: os.Getenv("WEB_SERVER_PORT"),
 	}
 }

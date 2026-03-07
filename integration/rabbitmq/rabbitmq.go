@@ -12,13 +12,13 @@ import (
 
 type RabbitMQ struct {
 	ctx    context.Context
-	Config *config.Config
+	Config *config.RabbitMQConfig
 	Conn   *amqp.Connection
 	Ch     *amqp.Channel
 }
 
-func NewRabbitMQIntegration(ctx context.Context, config *config.Config) (*RabbitMQ, error) {
-	conn, err := amqp.Dial(config.RabbitMQURL)
+func NewRabbitMQIntegration(ctx context.Context, config *config.RabbitMQConfig) (*RabbitMQ, error) {
+	conn, err := amqp.Dial(config.URL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}

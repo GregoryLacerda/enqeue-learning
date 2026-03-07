@@ -16,17 +16,17 @@ type Integrations struct {
 }
 
 func NewIntegrations(ctx context.Context, config *config.Config, dispatcher events.EventDispatcherInterface) (*Integrations, error) {
-	discordIntegration, err := discord.NewDiscordIntegration(config, dispatcher)
+	discordIntegration, err := discord.NewDiscordIntegration(&config.DiscordConfig, dispatcher)
 	if err != nil {
 		return nil, err
 	}
 
-	twitchIntegration, err := twitch.NewTwitchIntegration(config)
+	twitchIntegration, err := twitch.NewTwitchIntegration(ctx, &config.TwitchConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	rabbitMQIntegration, err := rabbitmq.NewRabbitMQIntegration(ctx, config)
+	rabbitMQIntegration, err := rabbitmq.NewRabbitMQIntegration(ctx, &config.RabbitMQConfig)
 	if err != nil {
 		return nil, err
 	}

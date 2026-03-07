@@ -11,14 +11,14 @@ import (
 )
 
 type Discord struct {
-	Config     *config.Config
+	Config     *config.DiscordConfig
 	Session    *discordgo.Session
 	Dispatcher events.EventDispatcherInterface
 }
 
-func NewDiscordIntegration(config *config.Config, dispatcher events.EventDispatcherInterface) (*Discord, error) {
+func NewDiscordIntegration(config *config.DiscordConfig, dispatcher events.EventDispatcherInterface) (*Discord, error) {
 
-	session, err := discordgo.New("Bot " + config.DiscordToken)
+	session, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Discord session: %w", err)
 	}
@@ -54,11 +54,11 @@ func (d *Discord) messageHandler(s *discordgo.Session, m *discordgo.MessageCreat
 		return
 	}
 
-	if !strings.HasPrefix(m.Content, d.Config.DiscordCommandPrefix) {
+	if !strings.HasPrefix(m.Content, d.Config.CommandPrefix) {
 		return
 	}
 
-	content := strings.TrimPrefix(m.Content, d.Config.DiscordCommandPrefix)
+	content := strings.TrimPrefix(m.Content, d.Config.CommandPrefix)
 	parts := strings.Fields(content)
 	if len(parts) == 0 {
 		return
