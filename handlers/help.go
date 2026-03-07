@@ -26,14 +26,11 @@ func (h *HelpCommandHandler) HandleEvent(event events.EventInterface) error {
 		return fmt.Errorf("invalid payload for help command")
 	}
 
-	response, err := h.service.GetHelpMessage()
-	if err != nil {
-		return fmt.Errorf("failed to get help message: %w", err)
-	}
-
 	log.Printf("handling help command from user: %s", payload.Username)
 
-	err = h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
+	response := h.service.ProcessHelp()
+
+	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {
 		return fmt.Errorf("failed to send help response: %w", err)
 	}

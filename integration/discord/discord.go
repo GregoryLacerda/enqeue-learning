@@ -20,7 +20,7 @@ func NewDiscordIntegration(config *config.Config, dispatcher events.EventDispatc
 
 	session, err := discordgo.New("Bot " + config.DiscordToken)
 	if err != nil {
-		return nil, fmt.Errorf("erro ao criar sessão do Discord: %w", err)
+		return nil, fmt.Errorf("failed to create Discord session: %w", err)
 	}
 
 	discord := &Discord{
@@ -37,10 +37,10 @@ func NewDiscordIntegration(config *config.Config, dispatcher events.EventDispatc
 func (d *Discord) Start() error {
 	err := d.Session.Open()
 	if err != nil {
-		return fmt.Errorf("erro ao abrir sessão do Discord: %w", err)
+		return fmt.Errorf("failed to open Discord session: %w", err)
 	}
 
-	log.Println("bot Discord conectado e online!")
+	log.Println("Discord bot connected and online!")
 
 	return nil
 }
@@ -86,7 +86,7 @@ func (d *Discord) messageHandler(s *discordgo.Session, m *discordgo.MessageCreat
 
 	err := d.Dispatcher.Dispatch(event)
 	if err != nil {
-		log.Printf("erro ao processar comando: %v", err)
+		log.Printf("error processing command: %v", err)
 		d.SendMessage(m.ChannelID, "❌ Erro ao processar comando!")
 	}
 }
@@ -94,7 +94,7 @@ func (d *Discord) messageHandler(s *discordgo.Session, m *discordgo.MessageCreat
 func (d *Discord) SendMessage(channelID, message string) error {
 	_, err := d.Session.ChannelMessageSend(channelID, message)
 	if err != nil {
-		return fmt.Errorf("erro ao enviar mensagem para o Discord: %w", err)
+		return fmt.Errorf("failed to send message to Discord: %w", err)
 	}
 	return nil
 }
@@ -105,7 +105,7 @@ func (d *Discord) ReplyToMessage(channelID, messageID, message string) error {
 		ChannelID: channelID,
 	})
 	if err != nil {
-		return fmt.Errorf("erro ao responder mensagem: %w", err)
+		return fmt.Errorf("failed to reply to message: %w", err)
 	}
 	return nil
 }

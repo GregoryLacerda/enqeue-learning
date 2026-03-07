@@ -18,20 +18,20 @@ type ResponseHandler struct {
 
 func NewResponseHandler(discord *discord.Discord, dispatcher *events.EventDispatcher, service *service.Service) *ResponseHandler {
 
-	// Registrar handlers específicos para cada comando
-	//saudations handlers
-	dispatcher.RegisterHandler("discord.command.hello", NewHelloCommandHandler(discord))
-	dispatcher.RegisterHandler("discord.command.oi", NewHelloCommandHandler(discord))
-	dispatcher.RegisterHandler("discord.command.olá", NewHelloCommandHandler(discord))
+	// Register specific handlers for each command
+	//greetings handlers
+	dispatcher.RegisterHandler("discord.command.hello", NewHelloCommandHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.oi", NewHelloCommandHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.olá", NewHelloCommandHandler(discord, service))
 
 	//help handlers
 	dispatcher.RegisterHandler("discord.command.help", NewHelpCommandHandler(discord, service))
 	dispatcher.RegisterHandler("discord.command.ajuda", NewHelpCommandHandler(discord, service))
-	dispatcher.RegisterHandler("discord.command.info", NewInfoCommandHandler(discord))
+	dispatcher.RegisterHandler("discord.command.info", NewInfoCommandHandler(discord, service))
 
 	//other handlers
-	dispatcher.RegisterHandler("discord.command.ping", NewPingCommandHandler(discord))
-	dispatcher.RegisterHandler("discord.command.calc", NewCalcCommandHandler(discord))
+	dispatcher.RegisterHandler("discord.command.ping", NewPingCommandHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.calc", NewCalcCommandHandler(discord, service))
 
 	return &ResponseHandler{
 		Discord:    discord,
@@ -53,15 +53,15 @@ func (h *ResponseHandler) ProcessMessage(message []byte) error {
 	event := events.NewEvent(eventName)
 	event.Payload = payload
 
-	// Sempre tentar dispatch primeiro (passa pelo sistema de eventos)
+	// Always try dispatch first (goes through event system)
 	err = h.dispatcher.Dispatch(event)
 	if err != nil {
 		return fmt.Errorf("failed to dispatch event: %w", err)
 	}
 
-	// Se não havia handlers registrados, tratar como comando desconhecido
+	// If there were no registered handlers, treat as unknown command
 	if !h.dispatcher.HasAnyHandler(eventName) {
-		unknownHandler := NewUnknownCommandHandler(h.Discord)
+		unknownHandler := NewUnknownCommandHandler(h.Discord, h.service)
 		err = unknownHandler.HandleEvent(event)
 		if err != nil {
 			return fmt.Errorf("failed to handle unknown command: %w", err)

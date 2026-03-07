@@ -39,7 +39,5 @@ func (h *CommandHandler) HandleEvent(event events.EventInterface) error {
 		return fmt.Errorf("failed to publish message: %w", err)
 	}
 
-	//h.Discord.SendMessage(payload.ChannelID, fmt.Sprintf("⏳ Comando `%s` recebido e está sendo processado...", payload.Command))
-
 	return nil
 }

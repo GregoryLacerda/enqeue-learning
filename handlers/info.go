@@ -3,17 +3,20 @@ package handlers
 import (
 	"enque-learning/events"
 	"enque-learning/integration/discord"
+	"enque-learning/service"
 	"fmt"
 	"log"
 )
 
 type InfoCommandHandler struct {
 	Discord *discord.Discord
+	Service *service.Service
 }
 
-func NewInfoCommandHandler(discord *discord.Discord) *InfoCommandHandler {
+func NewInfoCommandHandler(discord *discord.Discord, service *service.Service) *InfoCommandHandler {
 	return &InfoCommandHandler{
 		Discord: discord,
+		Service: service,
 	}
 }
 
@@ -25,21 +28,16 @@ func (h *InfoCommandHandler) HandleEvent(event events.EventInterface) error {
 
 	log.Printf("handling info command from user: %s", payload.Username)
 
-	response := fmt.Sprintf(`ℹ️ **Informações do Sistema:**
+	infoData := service.InfoData{
+		Username:  payload.Username,
+		UserID:    payload.UserID,
+		Command:   payload.Command,
+		ChannelID: payload.ChannelID,
+		GuildID:   payload.GuildID,
+		Timestamp: payload.Timestamp,
+	}
 
-👤 **Usuário:** %s
-🆔 **User ID:** %s
-📝 **Comando:** %s
-📅 **Canal ID:** %s
-🏢 **Guild ID:** %s
-⏰ **Timestamp:** %s`,
-		payload.Username,
-		payload.UserID,
-		payload.Command,
-		payload.ChannelID,
-		payload.GuildID,
-		payload.Timestamp,
-	)
+	response := h.Service.ProcessInfo(infoData)
 
 	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {

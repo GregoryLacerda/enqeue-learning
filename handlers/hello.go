@@ -3,17 +3,20 @@ package handlers
 import (
 	"enque-learning/events"
 	"enque-learning/integration/discord"
+	"enque-learning/service"
 	"fmt"
 	"log"
 )
 
 type HelloCommandHandler struct {
 	Discord *discord.Discord
+	Service *service.Service
 }
 
-func NewHelloCommandHandler(discord *discord.Discord) *HelloCommandHandler {
+func NewHelloCommandHandler(discord *discord.Discord, service *service.Service) *HelloCommandHandler {
 	return &HelloCommandHandler{
 		Discord: discord,
+		Service: service,
 	}
 }
 
@@ -25,7 +28,7 @@ func (h *HelloCommandHandler) HandleEvent(event events.EventInterface) error {
 
 	log.Printf("handling hello command from user: %s", payload.Username)
 
-	response := fmt.Sprintf("👋 Olá, %s! Como posso ajudar?", payload.Username)
+	response := h.Service.ProcessHello(payload.Username)
 
 	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {

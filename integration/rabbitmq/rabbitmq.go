@@ -81,7 +81,7 @@ func (r *RabbitMQ) setup() error {
 		return fmt.Errorf("failed to bind queue: %w", err)
 	}
 
-	log.Println("RabbitMQ sucess configured")
+	log.Println("RabbitMQ successfully configured")
 	return nil
 }
 

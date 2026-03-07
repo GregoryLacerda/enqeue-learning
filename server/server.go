@@ -36,42 +36,42 @@ func NewServer(cfg *config.Config, eventDispatcher *events.EventDispatcher, inte
 }
 
 func (s *Server) StartAll() error {
-	log.Println("🚀 Iniciando sistema completo (Producer + Consumer)...")
+	log.Println("🚀 Starting complete system (Producer + Consumer)...")
 
 	s.EventDispatcher.RegisterHandler("discord.command.received", s.CommandHandler)
 
-	// Iniciar Discord
+	// Start Discord
 	err := s.integrations.Discord.Start()
 	if err != nil {
-		return fmt.Errorf("erro ao iniciar Discord: %w", err)
+		return fmt.Errorf("failed to start Discord: %w", err)
 	}
 
-	// Iniciar Consumer
+	// Start Consumer
 	msgs, err := s.integrations.RabbitMQ.Consumer()
 	if err != nil {
-		return fmt.Errorf("erro ao iniciar consumer: %w", err)
+		return fmt.Errorf("failed to start consumer: %w", err)
 	}
 
-	log.Println("✅ Sistema completo iniciado com sucesso!")
+	log.Println("✅ Complete system started successfully!")
 
-	// Processar mensagens em background
+	// Process messages in background
 
 	for msg := range msgs {
-		log.Printf("📨 Mensagem recebida da fila")
+		log.Printf("📨 Message received from queue")
 
 		go func(msg amqp.Delivery) {
 			err := s.ResponseHandler.ProcessMessage(msg.Body)
 			if err != nil {
-				log.Printf("❌ Erro ao processar mensagem: %v", err)
+				log.Printf("❌ Error processing message: %v", err)
 				msg.Nack(false, true)
 			} else {
-				log.Printf("✅ Mensagem processada com sucesso")
+				log.Printf("✅ Message processed successfully")
 				msg.Ack(false)
 			}
 		}(msg)
 	}
 
-	// Aguardar shutdown
+	// Wait for shutdown
 	s.waitForShutdown()
 
 	return s.Shutdown()
@@ -81,11 +81,11 @@ func (s *Server) waitForShutdown() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	<-stop
-	log.Println("⚠️ Sinal de interrupção recebido...")
+	log.Println("⚠️ Interrupt signal received...")
 }
 
 func (s *Server) Shutdown() error {
-	log.Println("🛑 Encerrando sistema...")
+	log.Println("🛑 Shutting down system...")
 
 	if s.integrations.Discord != nil {
 		s.integrations.Discord.Stop()
@@ -95,6 +95,6 @@ func (s *Server) Shutdown() error {
 		s.integrations.RabbitMQ.Close()
 	}
 
-	log.Println("✅ Sistema encerrado com sucesso!")
+	log.Println("✅ System shut down successfully!")
 	return nil
 }
