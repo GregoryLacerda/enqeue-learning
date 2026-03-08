@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"enque-learning/integration"
-	"enque-learning/internal/config"
+	"discordcommandbot/integration"
+	"discordcommandbot/internal/config"
 	"sync"
 	"time"
 )

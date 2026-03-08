@@ -1,6 +1,6 @@
 package service
 
-import "enque-learning/pkg/logger"
+import "discordcommandbot/pkg/logger"
 
 // AddTwitchChannels adiciona um ou mais canais à lista de monitoramento
 func (s *Service) AddTwitchChannels(channels ...string) {

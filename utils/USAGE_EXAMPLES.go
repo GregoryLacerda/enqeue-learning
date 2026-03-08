@@ -4,14 +4,14 @@ package utils
 USAGE EXAMPLES FOR THE ERROR AND LOGGING SYSTEM
 
 This file demonstrates how to use the custom error and logging system
-in the enque-learning project.
+in the DiscordCommandBot project.
 
 ================================================================================
 SETUP (already done in cmd/main.go)
 ================================================================================
 
-	import "enque-learning/pkg/logger"
-	import "enque-learning/pkg/errors"
+	import "discordcommandbot/pkg/logger"
+	import "discordcommandbot/pkg/errors"
 
 	// Initialize logger at startup
 	logger.Init(config.DebugMode)

@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"enque-learning/events"
-	"enque-learning/integration/discord"
-	"enque-learning/pkg/errors"
-	"enque-learning/pkg/logger"
-	"enque-learning/service"
+	"discordcommandbot/events"
+	"discordcommandbot/integration/discord"
+	"discordcommandbot/pkg/errors"
+	"discordcommandbot/pkg/logger"
+	"discordcommandbot/service"
 )
 
 type PingCommandHandler struct {

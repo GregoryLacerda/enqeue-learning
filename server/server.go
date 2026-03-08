@@ -1,13 +1,13 @@
 package server
 
 import (
-	"enque-learning/events"
-	"enque-learning/handlers"
-	"enque-learning/integration"
-	"enque-learning/internal/config"
-	"enque-learning/pkg/errors"
-	"enque-learning/pkg/logger"
-	"enque-learning/service"
+	"discordcommandbot/events"
+	"discordcommandbot/handlers"
+	"discordcommandbot/integration"
+	"discordcommandbot/internal/config"
+	"discordcommandbot/pkg/errors"
+	"discordcommandbot/pkg/logger"
+	"discordcommandbot/service"
 	"os"
 	"os/signal"
 	"syscall"

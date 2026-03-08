@@ -2,11 +2,11 @@ package integration
 
 import (
 	"context"
-	"enque-learning/events"
-	"enque-learning/integration/discord"
-	"enque-learning/integration/rabbitmq"
-	"enque-learning/integration/twitch"
-	"enque-learning/internal/config"
+	"discordcommandbot/events"
+	"discordcommandbot/integration/discord"
+	"discordcommandbot/integration/rabbitmq"
+	"discordcommandbot/integration/twitch"
+	"discordcommandbot/internal/config"
 )
 
 type Integrations struct {

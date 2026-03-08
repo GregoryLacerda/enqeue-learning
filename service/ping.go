@@ -1,6 +1,6 @@
 package service
 
-import "enque-learning/constants"
+import "discordcommandbot/constants"
 
 func (s *Service) ProcessPing() string {
 	return constants.PingMessage

@@ -1,4 +1,4 @@
-# 🤖 enque-learning
+# 🤖 DiscordCommandBot
 
 Event-driven Discord bot built with Go and RabbitMQ for asynchronous command processing.
 
@@ -31,7 +31,7 @@ Event-driven Discord bot built with Go and RabbitMQ for asynchronous command pro
 
 ## 🎯 Overview
 
-**enque-learning** is a Discord bot that demonstrates event-driven architecture using Go. Commands are received from Discord, enqueued in RabbitMQ for asynchronous processing, and handled by dedicated event handlers.
+**DiscordCommandBot** is a Discord bot that demonstrates event-driven architecture using Go. Commands are received from Discord, enqueued in RabbitMQ for asynchronous processing, and handled by dedicated event handlers.
 
 ### Key Highlights
 
@@ -71,8 +71,8 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/enque-learning.git
-cd enque-learning
+git clone https://github.com/your-username/DiscordCommandBot.git
+cd DiscordCommandBot
 ```
 
 ### 2. Install Dependencies
@@ -101,7 +101,7 @@ Verify RabbitMQ is running:
 
 1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
 2. Click **"New Application"**
-3. Give it a name (e.g., "enque-learning")
+3. Give it a name (e.g., "DiscordCommandBot")
 4. Click **"Create"**
 
 #### Step 2: Create Bot User
@@ -151,7 +151,7 @@ Verify RabbitMQ is running:
 
 Fill in the required information:
 
-- **Name**: `enque-learning-bot` (or your preferred name)
+- **Name**: `DiscordCommandBot-bot` (or your preferred name)
 - **OAuth Redirect URLs**: `http://localhost` (for local development)
 - **Category**: Select **"Application Integration"** or **"Bot"**
 
@@ -492,7 +492,7 @@ For complete architecture documentation, see [AGENTS.md](AGENTS.md).
 ### Project Structure
 
 ```
-enque-learning/
+DiscordCommandBot/
 ├── .github/
 │   └── copilot-instructions.md    # AI development guidelines
 ├── cmd/
@@ -727,8 +727,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Getting Help
 
-- **Issues**: [GitHub Issues](https://github.com/your-username/enque-learning/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/enque-learning/discussions)
+- **Issues**: [GitHub Issues](https://github.com/your-username/DiscordCommandBot/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-username/DiscordCommandBot/discussions)
 
 ---
 

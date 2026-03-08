@@ -1,9 +1,9 @@
 
-# Agent Context - enque-learning Project
+# Agent Context - DiscordCommandBot Project
 
 ## 📋 Overview
 
-**enque-learning** is an event-driven Discord bot written in Go that uses RabbitMQ for asynchronous command processing. The project implements a robust event system based on the Event Dispatcher pattern, allowing extensibility and separation of concerns.
+**DiscordCommandBot** is an event-driven Discord bot written in Go that uses RabbitMQ for asynchronous command processing. The project implements a robust event system based on the Event Dispatcher pattern, allowing extensibility and separation of concerns.
 
 ### Purpose
 - Receive commands from Discord (e.g., `!ping`, `!help`, `!calc`)
@@ -154,7 +154,7 @@ Two-level system:
 ## 📁 Detailed Directory Structure
 
 ```
-enque-learning/
+DiscordCommandBot/
 │
 ├── cmd/
 │   └── main.go                    # Entry point: initializes complete system
@@ -443,9 +443,9 @@ dispatcher.RegisterHandler("discord.command.help", NewHelpCommandHandler(discord
 package handlers
 
 import (
-    "enque-learning/events"
-    "enque-learning/integration/discord"
-    "enque-learning/pkg/errors" and "enque-learning/pkg/logger"
+    "DiscordCommandBot/events"
+    "DiscordCommandBot/integration/discord"
+    "DiscordCommandBot/pkg/errors" and "DiscordCommandBot/pkg/logger"
 )
 
 type MyTaskCommandHandler struct {
@@ -863,7 +863,7 @@ func (e *EventDispatcher) Dispatch(event EventInterface) error {
 ```bash
 # 1. Clone repo (example)
 git clone <repo-url>
-cd enque-learning
+cd DiscordCommandBot
 
 # 2. Create .env
 cp .env.example .env
@@ -971,7 +971,7 @@ YourCommandError    = "❌ Error: %s"
 package service
 
 import (
-    "enque-learning/pkg/errors" and "enque-learning/pkg/logger"
+    "DiscordCommandBot/pkg/errors" and "DiscordCommandBot/pkg/logger"
 )
 
 // YourCommandMethod executes your command business logic
@@ -1004,11 +1004,11 @@ func processData(arg string) string {
 package handlers
 
 import (
-    "enque-learning/constants"
-    "enque-learning/events"
-    "enque-learning/integration/discord"
-    "enque-learning/service"
-    "enque-learning/pkg/errors" and "enque-learning/pkg/logger"
+    "DiscordCommandBot/constants"
+    "DiscordCommandBot/events"
+    "DiscordCommandBot/integration/discord"
+    "DiscordCommandBot/service"
+    "DiscordCommandBot/pkg/errors" and "DiscordCommandBot/pkg/logger"
     "fmt"
 )
 

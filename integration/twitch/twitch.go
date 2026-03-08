@@ -3,9 +3,9 @@ package twitch
 import (
 	"context"
 	"encoding/json"
-	"enque-learning/integration/twitch/models"
-	"enque-learning/integration/twitch/utils"
-	"enque-learning/internal/config"
+	"discordcommandbot/integration/twitch/models"
+	"discordcommandbot/integration/twitch/utils"
+	"discordcommandbot/internal/config"
 	"io"
 	"net/http"
 

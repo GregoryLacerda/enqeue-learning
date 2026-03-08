@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"enque-learning/events"
-	"enque-learning/integration"
-	"enque-learning/internal/config"
-	"enque-learning/pkg/logger"
-	"enque-learning/server"
-	"enque-learning/service"
+	"discordcommandbot/events"
+	"discordcommandbot/integration"
+	"discordcommandbot/internal/config"
+	"discordcommandbot/pkg/logger"
+	"discordcommandbot/server"
+	"discordcommandbot/service"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 
 	// Initialize logger with debug mode from config
 	logger.Init(cfg.DebugMode)
-	logger.Info("🚀 Starting enque-learning bot...")
+	logger.Info("🚀 Starting DiscordCommandBot bot...")
 	logger.Debug("Configuration loaded: DebugMode=%v, LogLevel=%s", cfg.DebugMode, cfg.LogLevel)
 
 	dispatcher := events.NewEventDispatcher()

@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"enque-learning/pkg/errors"
+	"discordcommandbot/pkg/errors"
 	"fmt"
 	"log"
 	"os"

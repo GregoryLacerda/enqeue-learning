@@ -1,8 +1,8 @@
 package service
 
 import (
-	"enque-learning/integration/twitch/models"
-	"enque-learning/pkg/logger"
+	"discordcommandbot/integration/twitch/models"
+	"discordcommandbot/pkg/logger"
 	"fmt"
 	"slices"
 	"time"

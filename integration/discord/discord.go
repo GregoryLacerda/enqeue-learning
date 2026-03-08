@@ -1,10 +1,10 @@
 package discord
 
 import (
-	"enque-learning/events"
-	"enque-learning/internal/config"
-	"enque-learning/pkg/errors"
-	"enque-learning/pkg/logger"
+	"discordcommandbot/events"
+	"discordcommandbot/internal/config"
+	"discordcommandbot/pkg/errors"
+	"discordcommandbot/pkg/logger"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"

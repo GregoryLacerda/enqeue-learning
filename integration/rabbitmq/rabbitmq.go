@@ -2,9 +2,9 @@ package rabbitmq
 
 import (
 	"context"
-	"enque-learning/internal/config"
-	"enque-learning/pkg/errors"
-	"enque-learning/pkg/logger"
+	"discordcommandbot/internal/config"
+	"discordcommandbot/pkg/errors"
+	"discordcommandbot/pkg/logger"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"

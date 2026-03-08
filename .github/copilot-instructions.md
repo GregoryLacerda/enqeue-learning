@@ -1,4 +1,4 @@
-# enque-learning - Development Guidelines
+# DiscordCommandBot - Development Guidelines
 
 ## Project Overview
 Event-driven Discord bot in Go using RabbitMQ for async command processing. Commands flow through EventDispatcher → Handlers → Services → Discord responses.

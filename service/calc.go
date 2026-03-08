@@ -1,7 +1,7 @@
 package service
 
 import (
-	"enque-learning/constants"
+	"discordcommandbot/constants"
 	"fmt"
 	"strconv"
 	"strings"

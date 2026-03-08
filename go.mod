@@ -1,4 +1,4 @@
-module enque-learning
+module discordcommandbot
 
 go 1.26
 

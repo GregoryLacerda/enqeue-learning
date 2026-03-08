@@ -1,7 +1,7 @@
 package events
 
 import (
-	"enque-learning/internal/errors"
+	"discordcommandbot/internal/errors"
 	"slices"
 	"sync"
 )

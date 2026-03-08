@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"enque-learning/pkg/errors"
-	"enque-learning/pkg/logger"
+	"discordcommandbot/pkg/errors"
+	"discordcommandbot/pkg/logger"
 )
 
 // StartTwitchMonitoringForever inicia o monitoramento indefinidamente

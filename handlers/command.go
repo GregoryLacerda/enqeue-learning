@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"enque-learning/events"
-	"enque-learning/integration/discord"
-	"enque-learning/integration/rabbitmq"
-	"enque-learning/pkg/errors"
-	"enque-learning/pkg/logger"
+	"discordcommandbot/events"
+	"discordcommandbot/integration/discord"
+	"discordcommandbot/integration/rabbitmq"
+	"discordcommandbot/pkg/errors"
+	"discordcommandbot/pkg/logger"
 )
 
 type CommandHandler struct {
