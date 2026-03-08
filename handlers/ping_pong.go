@@ -3,9 +3,9 @@ package handlers
 import (
 	"enque-learning/events"
 	"enque-learning/integration/discord"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
 	"enque-learning/service"
-	"fmt"
-	"log"
 )
 
 type PingCommandHandler struct {
@@ -23,16 +23,16 @@ func NewPingCommandHandler(discord *discord.Discord, service *service.Service) *
 func (h *PingCommandHandler) HandleEvent(event events.EventInterface) error {
 	payload, ok := event.GetPayload().(discord.DiscordCommandPayload)
 	if !ok {
-		return fmt.Errorf("invalid payload")
+		return errors.NewHandler("invalid payload", nil)
 	}
 
-	log.Printf("processing ping command from user: %s", payload.Username)
+	logger.Debug("🏓 Processing ping command from user: %s", payload.Username)
 
 	response := h.Service.ProcessPing()
 
 	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {
-		return fmt.Errorf("failed to send pong message: %w", err)
+		return errors.NewIntegration("failed to send pong message", err)
 	}
 
 	return nil

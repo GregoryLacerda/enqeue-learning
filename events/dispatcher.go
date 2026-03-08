@@ -2,6 +2,7 @@ package events
 
 import (
 	"enque-learning/internal/errors"
+	"slices"
 	"sync"
 )
 
@@ -74,10 +75,8 @@ func (e *EventDispatcher) RemoveHandler(eventName string, handler EventHandlerIn
 
 func (e *EventDispatcher) HasHandler(eventName string, handler EventHandlerInterface) bool {
 	if handlers, ok := e.handlers[eventName]; ok {
-		for _, h := range handlers {
-			if h == handler {
-				return true
-			}
+		if slices.Contains(handlers, handler) {
+			return true
 		}
 	}
 	return false

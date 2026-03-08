@@ -278,11 +278,11 @@ func (h *XCommandHandler) HandleEvent(event events.EventInterface) error {
     // 1. Cast the payload
     payload, ok := event.GetPayload().(discord.DiscordCommandPayload)
     if !ok {
-        return fmt.Errorf("invalid payload")
+        return errors.NewHandler("invalid payload type", nil)
     }
     
     // 2. Log for tracing
-    log.Printf("handling X command from user: %s", payload.Username)
+    logger.Debug("handling X command from user: %s", payload.Username)
     
     // 3. Command logic
     response := processLogic(payload)
@@ -290,12 +290,136 @@ func (h *XCommandHandler) HandleEvent(event events.EventInterface) error {
     // 4. Respond to Discord
     err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
     if err != nil {
-        return fmt.Errorf("failed to send response: %w", err)
+        return errors.NewIntegration("failed to send Discord response", err)
     }
     
     return nil
 }
 ```
+
+---
+
+## 🔧 Error and Logging System
+
+### Overview
+
+The project uses a custom error and logging system located in `utils/` that provides:
+- Type-safe error constructors for different error categories
+- Level-based logging (DEBUG, INFO, WARN, CRITICAL)
+- Debug mode support (only shows debug logs when `DEBUG_MODE=true`)
+- Automatic log level detection from error types
+
+### Error Types and Constructors
+
+All errors should be created using specific constructors from `utils/`:
+
+```go
+// Validation errors (user input) - INFO level
+errors.NewValidation("missing required argument", nil)
+errors.NewValidationf("invalid channel: %s", channelName)
+
+// Service errors (business logic) - WARN level
+errors.NewService("monitoring already in progress", nil)
+errors.NewServicef("no channels found for user: %s", userID)
+
+// Integration errors (Discord, RabbitMQ, Twitch) - WARN level
+errors.NewIntegration("failed to send Discord message", originalErr)
+errors.NewIntegrationf("RabbitMQ connection lost at %s", time.Now())
+
+// API errors (external API calls) - WARN level
+errors.NewAPI("Twitch API request failed", err)
+errors.NewAPIf("API returned status: %d", statusCode)
+
+// Handler errors (request handling) - WARN level
+errors.NewHandler("invalid payload type", nil)
+errors.NewHandlerf("unknown command: %s", command)
+
+// Config errors (configuration issues) - CRITICAL level
+errors.NewConfig("Discord token not found", nil)
+errors.NewConfigf("invalid port number: %s", port)
+
+// Network errors (connection issues) - WARN level
+errors.NewNetwork("connection timeout", err)
+
+// Auth errors (authentication/authorization) - CRITICAL level
+errors.NewAuth("invalid Discord token", nil)
+
+// Database errors (database operations) - CRITICAL level
+errors.NewDatabase("failed to connect to database", err)
+```
+
+### Error Levels
+
+| Type | Level | When to Use |
+|------|-------|-------------|
+| ValidationError | INFO | User input validation, argument errors |
+| ServiceError | WARN | Business logic errors, state issues |
+| IntegrationError | WARN | External service failures (Discord, RabbitMQ) |
+| APIError | WARN | External API call failures |
+| HandlerError | WARN | Request processing errors |
+| NetworkError | WARN | Connection timeouts, network issues |
+| ConfigError | CRITICAL | Missing/invalid configuration |
+| AuthError | CRITICAL | Authentication failures |
+| DatabaseError | CRITICAL | Database connection/query errors |
+
+### Logging Functions
+
+Replace `log.Printf()` with utils logging functions:
+
+```go
+// Debug logs (only shown when DEBUG_MODE=true)
+logger.Debug("Cache check for key: %s", key)
+logger.Debug("Processing payload: %+v", payload)
+
+// Info logs (general information)
+logger.Info("✅ Command executed successfully")
+logger.Info("📨 Message received from channel: %s", channelID)
+
+// Warn logs (warnings, non-critical issues)
+logger.Warn("⚠️ API rate limit approaching: %d/%d", current, max)
+logger.Warn("⏰ Monitoring timeout in 5 minutes")
+
+// Critical logs (critical errors, system failures)
+logger.Critical("❌ Failed to connect to RabbitMQ: %v", err)
+logger.Critical("🛑 System shutdown initiated")
+
+// Auto-detect level from AppError
+appErr := errors.NewAPI("Twitch API failed", err)
+logger.LogError(appErr)  // Automatically logs at WARN level
+```
+
+### Error Context
+
+Add context to errors for better debugging:
+
+```go
+err := errors.NewAPI("Twitch API request failed", originalErr).
+    WithContext("endpoint", "/streams").
+    WithContext("status_code", 429).
+    WithContext("retry_count", 3)
+
+logger.LogError(err)
+// Output: [WARN][API] Twitch API request failed: ... | Context: map[endpoint:/streams status_code:429 retry_count:3]
+```
+
+### Debug Mode
+
+Enable debug logging by setting in `.env`:
+
+```env
+DEBUG_MODE=true
+LOG_LEVEL=debug
+```
+
+Debug logs provide:
+- Variable values during execution
+- Step-by-step flow tracking
+- Cache operations
+- Internal state changes
+
+**See [utils/USAGE_EXAMPLES.go](../utils/USAGE_EXAMPLES.go) for complete usage examples.**
+
+---
 
 ### Handler Registration
 
@@ -321,8 +445,7 @@ package handlers
 import (
     "enque-learning/events"
     "enque-learning/integration/discord"
-    "fmt"
-    "log"
+    "enque-learning/pkg/errors" and "enque-learning/pkg/logger"
 )
 
 type MyTaskCommandHandler struct {
@@ -336,17 +459,17 @@ func NewMyTaskCommandHandler(discord *discord.Discord) *MyTaskCommandHandler {
 func (h *MyTaskCommandHandler) HandleEvent(event events.EventInterface) error {
     payload, ok := event.GetPayload().(discord.DiscordCommandPayload)
     if !ok {
-        return fmt.Errorf("invalid payload")
+        return errors.NewHandler("invalid payload type", nil)
     }
     
-    log.Printf("handling mytask command from user: %s", payload.Username)
+    logger.Info("handling mytask command from user: %s", payload.Username)
     
     // Your logic here
     response := "✅ Task executed successfully!"
     
     err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
     if err != nil {
-        return fmt.Errorf("failed to send response: %w", err)
+        return errors.NewIntegration("failed to send Discord response", err)
     }
     
     return nil
@@ -580,30 +703,41 @@ Log: "✅ System shut down successfully!"
 
 ## 🐛 Debugging and Logs
 
-### Important Logs
+### Logging System
 
-The system uses `log.Printf()` and `log.Println()` extensively:
+The system uses a custom logging system in `utils/` with four levels:
 
-**Discord:**
-- `"bot Discord conectado e online!"`
-- `"erro ao processar comando: %v"`
+**Log Levels:**
+- `logger.Debug()` - Only shown when `DEBUG_MODE=true` (🔍)
+- `logger.Info()` - General information (✅)
+- `logger.Warn()` - Warnings and non-critical issues (⚠️)
+- `logger.Critical()` - Critical errors and failures (❌)
 
-**RabbitMQ:**
-- `"RabbitMQ sucess configured"`
-- `"📨 Mensagem recebida da fila"`
-- `"✅ Mensagem processada com sucesso"`
-- `"❌ Erro ao processar mensagem: %v"`
+**Examples:**
+```go
+// Debug (only with DEBUG_MODE=true)
+logger.Debug("Cache check for key: %s", key)
+logger.Debug("Processing payload: %+v", payload)
 
-**Server:**
-- `"🚀 Iniciando sistema completo (Producer + Consumer)..."`
-- `"✅ Sistema completo iniciado com sucesso!"`
-- `"⚠️ Sinal de interrupção recebido..."`
-- `"🛑 Encerrando sistema..."`
+// Info
+logger.Info("✅ Discord bot connected successfully")
+logger.Info("📨 Message received from channel: %s", channelID)
 
-**Handlers:**
-- `"processing command: %s"`
-- `"handling X command from user: %s"`
-- `"processing response to Discord channel %s: %s"`
+// Warn
+logger.Warn("⚠️ API rate limit approaching: %d/%d", current, max)
+logger.Warn("⏰ Monitoring will timeout in 5 minutes")
+
+// Critical
+logger.Critical("❌ Failed to connect to RabbitMQ: %v", err)
+logger.Critical("🛑 System shutdown initiated")
+```
+
+**Error Logging:**
+```go
+// Auto-detect level from AppError
+appErr := errors.NewAPI("Twitch API failed", err)
+logger.LogError(appErr)  // Logs at appropriate level (WARN)
+```
 
 ### RabbitMQ Management
 
@@ -617,10 +751,13 @@ Access http://localhost:15672 to:
 
 ## 📚 Additional Documentation
 
-The project includes documentation in Portuguese:
+The project includes extensive documentation:
 
-- **PLANO_DE_IMPLEMENTACAO.md**: Step-by-step guide for original implementation
-- **MELHORIA_USANDO_EVENTOS.md**: Explanation of migration to event system
+- **README.md**: Complete project setup, configuration, and usage guide
+- **PLANO_DE_IMPLEMENTACAO.md**: Step-by-step guide for original implementation (Portuguese)
+- **MELHORIA_USANDO_EVENTOS.md**: Explanation of migration to event system (Portuguese)
+- **utils/USAGE_EXAMPLES.go**: Complete error and logging system examples
+- **.github/copilot-instructions.md**: Development guidelines for AI assistants
 
 ---
 
@@ -643,8 +780,8 @@ The project includes documentation in Portuguese:
 
 1. **Always implement EventHandlerInterface**: `HandleEvent(event EventInterface) error`
 2. **Register handlers in ResponseHandler**: Use `dispatcher.RegisterHandler()`
-3. **Use log.Printf for tracing**: Facilitates debugging
-4. **Error wrapping**: Use `fmt.Errorf("context: %w", err)` for stack traces
+3. **Use utils logging functions**: `logger.Debug()`, `logger.Info()`, `logger.Warn()`, `logger.Critical()`
+4. **Custom error constructors**: Use `errors.New*()` instead of `fmt.Errorf()`
 5. **Payload type assertion**: Always check `ok` when casting
 
 ### When Adding Features
@@ -749,7 +886,231 @@ go run cmd/main.go
 
 ---
 
-## 📝 Final Notes
+## � File Organization Pattern (CRITICAL)
+
+### ONE FILE PER COMMAND Rule
+
+**This is a MANDATORY pattern for both handlers and services.**
+
+```
+handlers/
+├── handlers.go                           # ResponseHandler + registration ONLY
+├── command.go                            # CommandHandler (Discord → RabbitMQ)
+├── ping_pong.go                          # Ping command
+├── hello.go                              # Hello command
+├── help.go                               # Help command
+├── info.go                               # Info command
+├── calc.go                               # Calculator command
+├── unknown.go                            # Unknown command fallback
+│
+└── Twitch Commands (one file per command):
+    ├── twitch_add_stream.go              # TwitchAddStream handler
+    ├── twitch_stream_monitoring.go       # TwitchStreamMonitoring handler
+    ├── twitch_stream_monitoring_forever.go # TwitchStreamMonitoringForever handler
+    └── twitch_stop_monitoring.go         # TwitchStopMonitoring handler
+
+service/
+├── service.go                            # Service struct + constructor ONLY
+├── ping.go                               # Ping service methods
+├── hello.go                              # Hello service methods
+├── help.go                               # Help service methods
+├── info.go                               # Info service methods
+├── calc.go                               # Calculator service methods
+├── unknown.go                            # Unknown command service methods
+│
+└── Twitch Commands (one file per command):
+    ├── twitch_add_stream.go              # AddTwitchChannels, GetTwitchChannels
+    ├── twitch_stream_monitoring.go       # StartTwitchMonitoring
+    ├── twitch_stream_monitoring_forever.go # StartTwitchMonitoringForever
+    ├── twitch_stop_monitoring.go         # StopTwitchMonitoring
+    └── twitch_utils.go                   # Shared utilities (monitoring logic)
+```
+
+### Pattern Rules
+
+1. **ONE command = ONE file** (both handler and service)
+2. **service.go** contains ONLY:
+   - Service struct definition
+   - NewService constructor
+   - NO business logic methods
+3. **handlers.go** contains ONLY:
+   - ResponseHandler struct
+   - NewResponseHandler constructor with handler registrations
+   - ProcessMessage method
+   - NO command-specific logic
+4. **Shared utilities** go in `<feature>_utils.go` (e.g., `twitch_utils.go`)
+
+### Why This Pattern?
+
+- ✅ **Easy Navigation**: Find command code instantly
+- ✅ **Clear Separation**: Each command is self-contained
+- ✅ **Scalability**: Add new command = add new file
+- ✅ **Maintainability**: Modify one command without touching others
+- ✅ **Parallel Development**: Multiple developers can work on different commands
+
+---
+
+## 🆕 How to Add a New Command (Updated)
+
+### Complete Step-by-Step Guide
+
+#### Step 1: Define Constants
+**File**: `constants/commands.go`
+
+```go
+// YourCommand Command
+YourCommandUsage    = "❌ Usage: `!yourcommand <arg>`\n**Example:** !yourcommand test"
+YourCommandSuccess  = "✅ Your command executed successfully!"
+YourCommandError    = "❌ Error: %s"
+```
+
+#### Step 2: Create Service File
+**File**: `service/yourcommand.go` (NEW FILE - one per command!)
+
+```go
+package service
+
+import (
+    "enque-learning/pkg/errors" and "enque-learning/pkg/logger"
+)
+
+// YourCommandMethod executes your command business logic
+func (s *Service) YourCommandMethod(arg string) (string, error) {
+    logger.Info("✅ Executing your command: %s", arg)
+    
+    // Business logic here
+    result := processData(arg)
+    
+    return result, nil
+}
+
+// Helper function if needed (private)
+func processData(arg string) string {
+    return "processed " + arg
+}
+```
+
+**Rules**:
+- Create a NEW file for each command
+- File name matches command: `yourcommand.go`
+- All logs in ENGLISH with emoji prefixes
+- Private helpers stay in same file
+- Shared utilities go to `<feature>_utils.go`
+
+#### Step 3: Create Handler File
+**File**: `handlers/yourcommand.go` (NEW FILE - one per command!)
+
+```go
+package handlers
+
+import (
+    "enque-learning/constants"
+    "enque-learning/events"
+    "enque-learning/integration/discord"
+    "enque-learning/service"
+    "enque-learning/pkg/errors" and "enque-learning/pkg/logger"
+    "fmt"
+)
+
+type YourCommandHandler struct {
+    Discord *discord.Discord
+    Service *service.Service
+}
+
+func NewYourCommandHandler(discord *discord.Discord, service *service.Service) *YourCommandHandler {
+    return &YourCommandHandler{
+        Discord: discord,
+        Service: service,
+    }
+}
+
+func (h *YourCommandHandler) HandleEvent(event events.EventInterface) error {
+    payload, ok := event.GetPayload().(discord.DiscordCommandPayload)
+    if !ok {
+        return errors.NewHandler("invalid payload type", nil)
+    }
+    
+    logger.Debug("handling yourcommand from user: %s", payload.Username)
+    
+    // Validate arguments
+    if len(payload.Arguments) < 1 {
+        err := errors.NewValidation("missing required argument", nil)
+        logger.LogError(err)
+        h.Discord.ReplyToMessage(
+            payload.ChannelID,
+            payload.MessageID,
+            constants.YourCommandUsage,
+        )
+        return nil
+    }
+    
+    // Execute via service
+    result, err := h.Service.YourCommandMethod(payload.Arguments[0])
+    if err != nil {
+        response := fmt.Sprintf(constants.YourCommandError, err.Error())
+        h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
+        return nil
+    }
+    
+    // Send success response
+    response := fmt.Sprintf(constants.YourCommandSuccess, result)
+    err = h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
+    if err != nil {
+        return errors.NewIntegration("failed to send Discord response", err)
+    }
+    
+    logger.Info("✅ Command executed successfully: yourcommand")
+    return nil
+}
+```
+
+#### Step 4: Register Handler
+**File**: `handlers/handlers.go` (MODIFY existing file)
+
+```go
+func NewResponseHandler(discord *discord.Discord, dispatcher *events.EventDispatcher, service *service.Service) *ResponseHandler {
+    // ... existing registrations ...
+    
+    // Your new command
+    dispatcher.RegisterHandler("discord.command.yourcommand", NewYourCommandHandler(discord, service))
+    
+    return &ResponseHandler{...}
+}
+```
+
+#### Step 5: Update Help (if applicable)
+**File**: `constants/commands.go`
+
+```go
+CommandHelpMessage = `📚 **Available Commands:**
+    ...
+    **!yourcommand <arg>** - Description of your command
+    ...`
+```
+
+#### Step 6: Validation Checklist
+
+```bash
+# 1. Check for errors
+go mod tidy
+
+# 2. Build
+go build -o bot.exe cmd/main.go
+
+# 3. Test in Discord
+!yourcommand test
+```
+
+### Example: Twitch Commands
+
+See the Twitch implementation as reference:
+- **Service**: `service/twitch_add_stream.go`, `service/twitch_stream_monitoring.go`, etc.
+- **Handlers**: `handlers/twitch_add_stream.go`, `handlers/twitch_stream_monitoring.go`, etc.
+- **Utilities**: `service/twitch_utils.go` (shared monitoring logic)
+
+---
+
+## �📝 Final Notes
 
 This project is an excellent example of:
 - ✅ **Event-Driven Architecture** in Go
@@ -764,3 +1125,4 @@ This project is an excellent example of:
 ---
 
 _This document was created to facilitate code understanding by AI systems and developers. Keep it updated as the project evolves._
+

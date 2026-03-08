@@ -3,8 +3,8 @@ package rabbitmq
 import (
 	"context"
 	"enque-learning/internal/config"
-	"fmt"
-	"log"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -20,13 +20,13 @@ type RabbitMQ struct {
 func NewRabbitMQIntegration(ctx context.Context, config *config.RabbitMQConfig) (*RabbitMQ, error) {
 	conn, err := amqp.Dial(config.URL)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
+		return nil, errors.NewIntegration("failed to connect to RabbitMQ", err)
 	}
 
 	ch, err := conn.Channel()
 	if err != nil {
 		conn.Close()
-		return nil, fmt.Errorf("failed to open a channel: %w", err)
+		return nil, errors.NewIntegration("failed to open a channel", err)
 	}
 
 	rmq := &RabbitMQ{
@@ -55,7 +55,7 @@ func (r *RabbitMQ) setup() error {
 		nil,                   // arguments
 	)
 	if err != nil {
-		return fmt.Errorf("failed to declare exchange: %w", err)
+		return errors.NewIntegration("failed to declare exchange", err)
 	}
 
 	_, err = r.Ch.QueueDeclare(
@@ -67,7 +67,7 @@ func (r *RabbitMQ) setup() error {
 		nil,                // arguments
 	)
 	if err != nil {
-		return fmt.Errorf("failed to declare queue: %w", err)
+		return errors.NewIntegration("failed to declare queue", err)
 	}
 
 	err = r.Ch.QueueBind(
@@ -78,10 +78,10 @@ func (r *RabbitMQ) setup() error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to bind queue: %w", err)
+		return errors.NewIntegration("failed to bind queue", err)
 	}
 
-	log.Println("RabbitMQ successfully configured")
+	logger.Info("✅ RabbitMQ successfully configured")
 	return nil
 }
 
@@ -103,10 +103,10 @@ func (r *RabbitMQ) Publisher(body []byte) error {
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("failed to publish message: %w", err)
+		return errors.NewIntegration("failed to publish message", err)
 	}
 
-	log.Printf("message published: %s", string(body))
+	logger.Debug("📨 Message published: %s", string(body))
 	return nil
 }
 
@@ -122,7 +122,7 @@ func (r *RabbitMQ) Consumer() (<-chan amqp.Delivery, error) {
 		nil,                // args
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to register consumer: %w", err)
+		return nil, errors.NewIntegration("failed to register consumer", err)
 	}
 	return msgs, nil
 }

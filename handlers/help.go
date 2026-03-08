@@ -3,9 +3,9 @@ package handlers
 import (
 	"enque-learning/events"
 	"enque-learning/integration/discord"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
 	"enque-learning/service"
-	"fmt"
-	"log"
 )
 
 type HelpCommandHandler struct {
@@ -23,16 +23,16 @@ func NewHelpCommandHandler(discord *discord.Discord, service *service.Service) *
 func (h *HelpCommandHandler) HandleEvent(event events.EventInterface) error {
 	payload, ok := event.GetPayload().(discord.DiscordCommandPayload)
 	if !ok {
-		return fmt.Errorf("invalid payload for help command")
+		return errors.NewHandler("invalid payload for help command", nil)
 	}
 
-	log.Printf("handling help command from user: %s", payload.Username)
+	logger.Debug("📚 Handling help command from user: %s", payload.Username)
 
 	response := h.service.ProcessHelp()
 
 	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {
-		return fmt.Errorf("failed to send help response: %w", err)
+		return errors.NewIntegration("failed to send help response", err)
 	}
 
 	return nil

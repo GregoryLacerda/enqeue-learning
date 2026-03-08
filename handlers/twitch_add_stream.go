@@ -1,0 +1,57 @@
+package handlers
+
+import (
+	"enque-learning/constants"
+	"enque-learning/events"
+	"enque-learning/integration/discord"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
+	"enque-learning/service"
+	"fmt"
+	"strings"
+)
+
+type TwitchAddStreamHandler struct {
+	Discord *discord.Discord
+	Service *service.Service
+}
+
+func NewTwitchAddStreamHandler(discord *discord.Discord, service *service.Service) *TwitchAddStreamHandler {
+	return &TwitchAddStreamHandler{
+		Discord: discord,
+		Service: service,
+	}
+}
+
+func (h *TwitchAddStreamHandler) HandleEvent(event events.EventInterface) error {
+	payload, ok := event.GetPayload().(discord.DiscordCommandPayload)
+	if !ok {
+		return errors.NewHandler("invalid payload", nil)
+	}
+
+	logger.Debug("🟣 Handling TwitchAddStream command from user: %s", payload.Username)
+
+	// Verifica se foram passados argumentos (canais)
+	if len(payload.Arguments) == 0 {
+		err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, constants.TwitchAddStreamUsage)
+		if err != nil {
+			return errors.NewIntegration("failed to send response", err)
+		}
+		return nil
+	}
+
+	// Adiciona os canais
+	h.Service.AddTwitchChannels(payload.Arguments...)
+
+	// Monta resposta
+	channelsList := strings.Join(payload.Arguments, ", ")
+	totalChannels := len(h.Service.GetTwitchChannels())
+	response := fmt.Sprintf(constants.TwitchAddStreamSuccess, channelsList, totalChannels)
+
+	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
+	if err != nil {
+		return errors.NewIntegration("failed to send response", err)
+	}
+
+	return nil
+}

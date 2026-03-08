@@ -5,9 +5,9 @@ import (
 	"enque-learning/handlers"
 	"enque-learning/integration"
 	"enque-learning/internal/config"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
 	"enque-learning/service"
-	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -36,36 +36,36 @@ func NewServer(cfg *config.Config, eventDispatcher *events.EventDispatcher, inte
 }
 
 func (s *Server) StartAll() error {
-	log.Println("🚀 Starting complete system (Producer + Consumer)...")
+	logger.Info("🚀 Starting complete system (Producer + Consumer)...")
 
 	s.EventDispatcher.RegisterHandler("discord.command.received", s.CommandHandler)
 
 	// Start Discord
 	err := s.integrations.Discord.Start()
 	if err != nil {
-		return fmt.Errorf("failed to start Discord: %w", err)
+		return errors.NewIntegration("failed to start Discord", err)
 	}
 
 	// Start Consumer
 	msgs, err := s.integrations.RabbitMQ.Consumer()
 	if err != nil {
-		return fmt.Errorf("failed to start consumer: %w", err)
+		return errors.NewIntegration("failed to start consumer", err)
 	}
 
-	log.Println("✅ Complete system started successfully!")
+	logger.Info("✅ Complete system started successfully!")
 
 	// Process messages in background
 
 	for msg := range msgs {
-		log.Printf("📨 Message received from queue")
+		logger.Debug("📨 Message received from queue")
 
 		go func(msg amqp.Delivery) {
 			err := s.ResponseHandler.ProcessMessage(msg.Body)
 			if err != nil {
-				log.Printf("❌ Error processing message: %v", err)
+				logger.Warn("❌ Error processing message: %v", err)
 				msg.Nack(false, true)
 			} else {
-				log.Printf("✅ Message processed successfully")
+				logger.Debug("✅ Message processed successfully")
 				msg.Ack(false)
 			}
 		}(msg)
@@ -81,11 +81,11 @@ func (s *Server) waitForShutdown() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	<-stop
-	log.Println("⚠️ Interrupt signal received...")
+	logger.Warn("⚠️ Interrupt signal received...")
 }
 
 func (s *Server) Shutdown() error {
-	log.Println("🛑 Shutting down system...")
+	logger.Info("🛑 Shutting down system...")
 
 	if s.integrations.Discord != nil {
 		s.integrations.Discord.Stop()
@@ -95,6 +95,6 @@ func (s *Server) Shutdown() error {
 		s.integrations.RabbitMQ.Close()
 	}
 
-	log.Println("✅ System shut down successfully!")
+	logger.Info("✅ System shut down successfully!")
 	return nil
 }

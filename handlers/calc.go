@@ -3,9 +3,9 @@ package handlers
 import (
 	"enque-learning/events"
 	"enque-learning/integration/discord"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
 	"enque-learning/service"
-	"fmt"
-	"log"
 )
 
 type CalcCommandHandler struct {
@@ -23,16 +23,16 @@ func NewCalcCommandHandler(discord *discord.Discord, service *service.Service) *
 func (h *CalcCommandHandler) HandleEvent(event events.EventInterface) error {
 	payload, ok := event.GetPayload().(discord.DiscordCommandPayload)
 	if !ok {
-		return fmt.Errorf("invalid payload for calc command")
+		return errors.NewHandler("invalid payload for calc command", nil)
 	}
 
-	log.Printf("handling calc command from user: %s", payload.Username)
+	logger.Debug("🧮 Handling calc command from user: %s", payload.Username)
 
 	response := h.Service.ProcessCalc(payload.Arguments)
 
 	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {
-		return fmt.Errorf("failed to send calc response: %w", err)
+		return errors.NewIntegration("failed to send calc response", err)
 	}
 
 	return nil

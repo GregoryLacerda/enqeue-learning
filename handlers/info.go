@@ -3,9 +3,9 @@ package handlers
 import (
 	"enque-learning/events"
 	"enque-learning/integration/discord"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
 	"enque-learning/service"
-	"fmt"
-	"log"
 )
 
 type InfoCommandHandler struct {
@@ -23,10 +23,10 @@ func NewInfoCommandHandler(discord *discord.Discord, service *service.Service) *
 func (h *InfoCommandHandler) HandleEvent(event events.EventInterface) error {
 	payload, ok := event.GetPayload().(discord.DiscordCommandPayload)
 	if !ok {
-		return fmt.Errorf("invalid payload for info command")
+		return errors.NewHandler("invalid payload for info command", nil)
 	}
 
-	log.Printf("handling info command from user: %s", payload.Username)
+	logger.Debug("ℹ️ Handling info command from user: %s", payload.Username)
 
 	infoData := service.InfoData{
 		Username:  payload.Username,
@@ -41,7 +41,7 @@ func (h *InfoCommandHandler) HandleEvent(event events.EventInterface) error {
 
 	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {
-		return fmt.Errorf("failed to send info response: %w", err)
+		return errors.NewIntegration("failed to send info response", err)
 	}
 
 	return nil

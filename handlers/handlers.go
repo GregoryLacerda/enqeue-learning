@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"enque-learning/events"
 	"enque-learning/integration/discord"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
 	"enque-learning/service"
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -33,6 +34,12 @@ func NewResponseHandler(discord *discord.Discord, dispatcher *events.EventDispat
 	dispatcher.RegisterHandler("discord.command.ping", NewPingCommandHandler(discord, service))
 	dispatcher.RegisterHandler("discord.command.calc", NewCalcCommandHandler(discord, service))
 
+	// Twitch handlers
+	dispatcher.RegisterHandler("discord.command.twitchaddstream", NewTwitchAddStreamHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.twitchstreammonitoring", NewTwitchStreamMonitoringHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.twitchstreammonitoringforever", NewTwitchStreamMonitoringForeverHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.twitchstopmonitoring", NewTwitchStopMonitoringHandler(discord, service))
+
 	return &ResponseHandler{
 		Discord:    discord,
 		dispatcher: dispatcher,
@@ -44,10 +51,10 @@ func (h *ResponseHandler) ProcessMessage(message []byte) error {
 	var payload discord.DiscordCommandPayload
 	err := json.Unmarshal(message, &payload)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal message: %w", err)
+		return errors.NewHandler("failed to unmarshal message", err)
 	}
 
-	log.Printf("processing response to Discord channel %s: %s", payload.ChannelID, payload.Command)
+	logger.Debug("🔍 Processing response to Discord channel %s: %s", payload.ChannelID, payload.Command)
 
 	eventName := fmt.Sprintf("discord.command.%s", strings.ToLower(payload.Command))
 	event := events.NewEvent(eventName)
@@ -56,7 +63,7 @@ func (h *ResponseHandler) ProcessMessage(message []byte) error {
 	// Always try dispatch first (goes through event system)
 	err = h.dispatcher.Dispatch(event)
 	if err != nil {
-		return fmt.Errorf("failed to dispatch event: %w", err)
+		return errors.NewHandler("failed to dispatch event", err)
 	}
 
 	// If there were no registered handlers, treat as unknown command
@@ -64,11 +71,11 @@ func (h *ResponseHandler) ProcessMessage(message []byte) error {
 		unknownHandler := NewUnknownCommandHandler(h.Discord, h.service)
 		err = unknownHandler.HandleEvent(event)
 		if err != nil {
-			return fmt.Errorf("failed to handle unknown command: %w", err)
+			return errors.NewHandler("failed to handle unknown command", err)
 		}
 	}
 
-	log.Printf("response sent to Discord with success")
+	logger.Debug("✅ Response sent to Discord with success")
 	return nil
 }
 

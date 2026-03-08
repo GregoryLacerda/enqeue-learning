@@ -5,8 +5,8 @@ import (
 	"enque-learning/events"
 	"enque-learning/integration/discord"
 	"enque-learning/integration/rabbitmq"
-	"fmt"
-	"log"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
 )
 
 type CommandHandler struct {
@@ -24,19 +24,19 @@ func NewCommandHandler(rabbitMQ *rabbitmq.RabbitMQ, discord *discord.Discord) *C
 func (h *CommandHandler) HandleEvent(event events.EventInterface) error {
 	payload, ok := event.GetPayload().(discord.DiscordCommandPayload)
 	if !ok {
-		return fmt.Errorf("invalid payload")
+		return errors.NewHandler("invalid payload", nil)
 	}
 
-	log.Printf("processing command: %s", payload.Command)
+	logger.Debug("🔍 Processing command: %s", payload.Command)
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("failed to marshal payload: %w", err)
+		return errors.NewHandler("failed to marshal payload", err)
 	}
 
 	err = h.RabbitMQ.Publisher(jsonData)
 	if err != nil {
-		return fmt.Errorf("failed to publish message: %w", err)
+		return errors.NewIntegration("failed to publish message", err)
 	}
 
 	return nil

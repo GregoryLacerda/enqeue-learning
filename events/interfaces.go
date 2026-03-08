@@ -4,7 +4,7 @@ type EventInterface interface {
 	GetName() string
 	GetDate() string
 	GetID() string
-	GetPayload() interface{}
+	GetPayload() any
 }
 
 type EventHandlerInterface interface {

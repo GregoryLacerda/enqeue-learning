@@ -5,6 +5,7 @@ import (
 	"enque-learning/events"
 	"enque-learning/integration"
 	"enque-learning/internal/config"
+	"enque-learning/pkg/logger"
 	"enque-learning/server"
 	"enque-learning/service"
 )
@@ -14,6 +15,11 @@ func main() {
 	ctx := context.Background()
 
 	cfg := config.LoadConfig()
+
+	// Initialize logger with debug mode from config
+	logger.Init(cfg.DebugMode)
+	logger.Info("🚀 Starting enque-learning bot...")
+	logger.Debug("Configuration loaded: DebugMode=%v, LogLevel=%s", cfg.DebugMode, cfg.LogLevel)
 
 	dispatcher := events.NewEventDispatcher()
 
@@ -32,5 +38,6 @@ func main() {
 }
 
 func endAsError(err error) {
+	logger.Critical("Fatal error: %v", err)
 	panic(err)
 }

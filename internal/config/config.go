@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -14,6 +15,8 @@ type Config struct {
 
 	// Server
 	WebServerPort string
+	DebugMode     bool
+	LogLevel      string
 }
 
 type DiscordConfig struct {
@@ -40,6 +43,18 @@ func LoadConfig() *Config {
 		log.Fatal("Fatal Error loading .env")
 	}
 
+	// Parse debug mode (defaults to false)
+	debugMode := false
+	if debugEnv := os.Getenv("DEBUG_MODE"); debugEnv != "" {
+		debugMode, _ = strconv.ParseBool(debugEnv)
+	}
+
+	// Get log level (defaults to "info")
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
+
 	return &Config{
 		DiscordConfig: DiscordConfig{
 			Token:         os.Getenv("DISCORD_TOKEN"),
@@ -56,5 +71,7 @@ func LoadConfig() *Config {
 			ClientSecret: os.Getenv("TWITCH_CLIENT_SECRET"),
 		},
 		WebServerPort: os.Getenv("WEB_SERVER_PORT"),
+		DebugMode:     debugMode,
+		LogLevel:      logLevel,
 	}
 }

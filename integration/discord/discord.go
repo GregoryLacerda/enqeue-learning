@@ -3,8 +3,8 @@ package discord
 import (
 	"enque-learning/events"
 	"enque-learning/internal/config"
-	"fmt"
-	"log"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -20,7 +20,7 @@ func NewDiscordIntegration(config *config.DiscordConfig, dispatcher events.Event
 
 	session, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Discord session: %w", err)
+		return nil, errors.NewIntegration("failed to create Discord session", err)
 	}
 
 	discord := &Discord{
@@ -37,10 +37,10 @@ func NewDiscordIntegration(config *config.DiscordConfig, dispatcher events.Event
 func (d *Discord) Start() error {
 	err := d.Session.Open()
 	if err != nil {
-		return fmt.Errorf("failed to open Discord session: %w", err)
+		return errors.NewIntegration("failed to open Discord session", err)
 	}
 
-	log.Println("Discord bot connected and online!")
+	logger.Info("✅ Discord bot connected and online!")
 
 	return nil
 }
@@ -86,7 +86,7 @@ func (d *Discord) messageHandler(s *discordgo.Session, m *discordgo.MessageCreat
 
 	err := d.Dispatcher.Dispatch(event)
 	if err != nil {
-		log.Printf("error processing command: %v", err)
+		logger.Warn("❌ Error processing command: %v", err)
 		d.SendMessage(m.ChannelID, "❌ Erro ao processar comando!")
 	}
 }
@@ -94,7 +94,7 @@ func (d *Discord) messageHandler(s *discordgo.Session, m *discordgo.MessageCreat
 func (d *Discord) SendMessage(channelID, message string) error {
 	_, err := d.Session.ChannelMessageSend(channelID, message)
 	if err != nil {
-		return fmt.Errorf("failed to send message to Discord: %w", err)
+		return errors.NewIntegration("failed to send message to Discord", err)
 	}
 	return nil
 }
@@ -105,7 +105,7 @@ func (d *Discord) ReplyToMessage(channelID, messageID, message string) error {
 		ChannelID: channelID,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to reply to message: %w", err)
+		return errors.NewIntegration("failed to reply to message", err)
 	}
 	return nil
 }

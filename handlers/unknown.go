@@ -3,9 +3,9 @@ package handlers
 import (
 	"enque-learning/events"
 	"enque-learning/integration/discord"
+	"enque-learning/pkg/errors"
+	"enque-learning/pkg/logger"
 	"enque-learning/service"
-	"fmt"
-	"log"
 )
 
 type UnknownCommandHandler struct {
@@ -23,16 +23,16 @@ func NewUnknownCommandHandler(discord *discord.Discord, service *service.Service
 func (h *UnknownCommandHandler) HandleEvent(event events.EventInterface) error {
 	payload, ok := event.GetPayload().(discord.DiscordCommandPayload)
 	if !ok {
-		return fmt.Errorf("invalid payload for unknown command")
+		return errors.NewHandler("invalid payload for unknown command", nil)
 	}
 
-	log.Printf("handling unknown command: %s from user: %s", payload.Command, payload.Username)
+	logger.Debug("❓ Handling unknown command: %s from user: %s", payload.Command, payload.Username)
 
 	response := h.Service.ProcessUnknownCommand(payload.Command)
 
 	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {
-		return fmt.Errorf("failed to send unknown command response: %w", err)
+		return errors.NewIntegration("failed to send unknown command response", err)
 	}
 
 	return nil

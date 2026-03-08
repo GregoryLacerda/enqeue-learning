@@ -10,7 +10,7 @@ type Event struct {
 	ID      string
 	Name    string
 	Date    time.Time
-	Payload interface{}
+	Payload any
 }
 
 func NewEvent(name string) *Event {
@@ -33,6 +33,6 @@ func (e *Event) GetID() string {
 	return e.ID
 }
 
-func (e *Event) GetPayload() interface{} {
+func (e *Event) GetPayload() any {
 	return e.Payload
 }
