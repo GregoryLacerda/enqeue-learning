@@ -1,7 +1,8 @@
 package events
 
 import (
-	"discordcommandbot/internal/errors"
+	"discordcommandbot/pkg/errors"
+	"fmt"
 	"slices"
 	"sync"
 )
@@ -58,7 +59,7 @@ func (e *EventDispatcher) RegisterHandler(eventName string, handler EventHandler
 		return nil
 	}
 
-	return errors.NewAlreadyRegisteredError(eventName)
+	return errors.NewValidation(eventName, fmt.Errorf("handler already registered"))
 }
 
 func (e *EventDispatcher) RemoveHandler(eventName string, handler EventHandlerInterface) error {

@@ -124,7 +124,7 @@ func (s *Service) formatTwitchStreamNotification(stream models.StreamData) strin
 🎯 **Playing:** %s
 👥 **Viewers:** %d
 ⏱️ **Live for:** %dh %dmin
-🔗 **Watch:** https://twitch.tv/%s`,
+🔗 **Watch:** <https://twitch.tv/%s>`,
 		stream.UserName,
 		stream.Title,
 		stream.GameName,

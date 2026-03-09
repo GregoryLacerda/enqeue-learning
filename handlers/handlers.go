@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"encoding/json"
 	"discordcommandbot/events"
 	"discordcommandbot/integration/discord"
 	"discordcommandbot/pkg/errors"
 	"discordcommandbot/pkg/logger"
 	"discordcommandbot/service"
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -35,10 +35,12 @@ func NewResponseHandler(discord *discord.Discord, dispatcher *events.EventDispat
 	dispatcher.RegisterHandler("discord.command.calc", NewCalcCommandHandler(discord, service))
 
 	// Twitch handlers
-	dispatcher.RegisterHandler("discord.command.twitchaddstream", NewTwitchAddStreamHandler(discord, service))
-	dispatcher.RegisterHandler("discord.command.twitchstreammonitoring", NewTwitchStreamMonitoringHandler(discord, service))
-	dispatcher.RegisterHandler("discord.command.twitchstreammonitoringforever", NewTwitchStreamMonitoringForeverHandler(discord, service))
-	dispatcher.RegisterHandler("discord.command.twitchstopmonitoring", NewTwitchStopMonitoringHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.twitch.add", NewTwitchAddStreamHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.twitch.list", NewTwitchListStreamsHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.twitch.clear", NewTwitchClearStreamsHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.twitch.start", NewTwitchStreamMonitoringHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.twitch.startforever", NewTwitchStreamMonitoringForeverHandler(discord, service))
+	dispatcher.RegisterHandler("discord.command.twitch.stop", NewTwitchStopMonitoringHandler(discord, service))
 
 	return &ResponseHandler{
 		Discord:    discord,

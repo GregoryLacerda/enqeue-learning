@@ -41,10 +41,17 @@ func (h *TwitchAddStreamHandler) HandleEvent(event events.EventInterface) error 
 	}
 
 	// Adiciona os canais
-	h.Service.AddTwitchChannels(payload.Arguments...)
+	addedChannels := h.Service.AddTwitchChannels(payload.Arguments...)
+	if len(addedChannels) == 0 {
+		err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, constants.TwitchAddStreamUsage)
+		if err != nil {
+			return errors.NewIntegration("failed to send response", err)
+		}
+		return nil
+	}
 
 	// Monta resposta
-	channelsList := strings.Join(payload.Arguments, ", ")
+	channelsList := strings.Join(addedChannels, ", ")
 	totalChannels := len(h.Service.GetTwitchChannels())
 	response := fmt.Sprintf(constants.TwitchAddStreamSuccess, channelsList, totalChannels)
 

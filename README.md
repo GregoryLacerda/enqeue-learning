@@ -50,7 +50,8 @@ docker-compose up -d
 
 ```env
 DISCORD_TOKEN=your_discord_bot_token
-DISCORD_COMMAND_PREFIX=!
+# Optional: Register slash commands instantly in one server
+DISCORD_GUILD_ID=your_discord_server_id
 
 RABBITMQ_URL=amqp://guest:guest@localhost:5672/
 QUEUE_NAME=discord-commands
@@ -81,33 +82,41 @@ go run cmd/main.go
 
 ## Commands
 
+The bot uses slash commands (`/`) only.
+
 ### General
 
-- `!ping` - Health check
-- `!hello` - Greeting message
-- `!help` - List available commands
-- `!info` - System info
-- `!calc <expression>` - Simple calculator
+- `/ping` - Checks if the bot is online
+- `/hello` - Sends a greeting
+- `/help` - Lists available commands
+- `/info` - Shows user/system information
+- `/calc expression:<text>` - Calculates an expression
 
 Examples:
 
 ```text
-!ping
-!calc 2 + 2 * 3
+/ping
+/calc expression:2 + 2 * 3
 ```
 
 ### Twitch
 
-- `!TwitchAddStream <channel1> [channel2] ...`
-- `!TwitchStreamMonitoring <duration_minutes> <check_interval_minutes>`
-- `!TwitchStreamMonitoringForever <check_interval_minutes>`
-- `!TwitchStopMonitoring`
+- `/twitch add channels:<channel1 channel2 ...> [ephemeral:true|false]`
+- `/twitch list [ephemeral:true|false]`
+- `/twitch clear [ephemeral:true|false]`
+- `/twitch start duration_minutes:<int> check_interval_minutes:<int> [ephemeral:true|false]`
+- `/twitch startforever check_interval_minutes:<int> [ephemeral:true|false]`
+- `/twitch stop [ephemeral:true|false]`
 
 Notes:
 
 - Requires `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET`
 - Anti-spam cooldown for repeated notifications is enabled
 - Only one monitoring process can run at a time
+- Slash command descriptions and option hints are shown directly in Discord while typing
+- `/twitch add` supports channel autocomplete while typing
+- `ephemeral` is optional for Twitch admin actions and controls if the command ack is private or public
+- For instant slash updates in your server, set `DISCORD_GUILD_ID` in `.env`
 
 ## Project Structure
 
@@ -144,7 +153,6 @@ go test ./...
 ### Bot does not respond
 
 - Validate `DISCORD_TOKEN`
-- Ensure Message Content Intent is enabled in Discord Developer Portal
 - Check bot permissions on the server/channel
 - Confirm RabbitMQ is running
 
