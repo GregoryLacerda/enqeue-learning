@@ -33,7 +33,7 @@ func (h *TwitchStopMonitoringHandler) HandleEvent(event events.EventInterface) e
 	// Para o monitoramento
 	err := h.Service.StopTwitchMonitoring()
 	if err != nil {
-		response := fmt.Sprintf(constants.TwitchStopMonitoringError, err.Error())
+		response := fmt.Sprintf(constants.TwitchStopError, err.Error())
 		err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 		if err != nil {
 			return errors.NewIntegration("failed to send response", err)
@@ -42,7 +42,7 @@ func (h *TwitchStopMonitoringHandler) HandleEvent(event events.EventInterface) e
 	}
 
 	// Resposta de sucesso
-	err = h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, constants.TwitchStopMonitoringSuccess)
+	err = h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, constants.TwitchStopSuccess)
 	if err != nil {
 		return errors.NewIntegration("failed to send response", err)
 	}

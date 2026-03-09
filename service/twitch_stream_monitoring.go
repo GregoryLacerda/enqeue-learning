@@ -22,6 +22,7 @@ func (s *Service) StartTwitchMonitoring(channelID string, durationMinutes int, i
 
 	s.twitchNotifyChannelID = channelID
 	s.twitchIsMonitoring = true
+	s.twitchCheckInterval = time.Duration(intervalMinutes) * time.Minute
 
 	// Cria contexto com timeout
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(durationMinutes)*time.Minute)
@@ -30,6 +31,8 @@ func (s *Service) StartTwitchMonitoring(channelID string, durationMinutes int, i
 
 	logger.Info("🚀 Starting Twitch monitoring: %d channels for %d minutes (interval: %d min)",
 		len(s.twitchChannels), durationMinutes, intervalMinutes)
+	logger.Info("🔧 Twitch notify settings: mode=%s, effective_cooldown=%d min",
+		s.config.TwitchConfig.NotifyMode, intervalMinutes)
 
 	// Inicia goroutine de monitoramento
 	go s.monitorTwitchStreams(intervalMinutes, false)

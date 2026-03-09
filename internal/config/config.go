@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -34,6 +35,7 @@ type RabbitMQConfig struct {
 type TwitchConfig struct {
 	ClientID     string
 	ClientSecret string
+	NotifyMode   string
 }
 
 func LoadConfig() *Config {
@@ -55,6 +57,12 @@ func LoadConfig() *Config {
 		logLevel = "info"
 	}
 
+	// Twitch notification mode (defaults to always)
+	notifyMode := strings.ToLower(strings.TrimSpace(os.Getenv("TWITCH_NOTIFY_MODE")))
+	if notifyMode != "cooldown" {
+		notifyMode = "always"
+	}
+
 	return &Config{
 		DiscordConfig: DiscordConfig{
 			Token:   os.Getenv("DISCORD_TOKEN"),
@@ -69,6 +77,7 @@ func LoadConfig() *Config {
 		TwitchConfig: TwitchConfig{
 			ClientID:     os.Getenv("TWITCH_CLIENT_ID"),
 			ClientSecret: os.Getenv("TWITCH_CLIENT_SECRET"),
+			NotifyMode:   notifyMode,
 		},
 		WebServerPort: os.Getenv("WEB_SERVER_PORT"),
 		DebugMode:     debugMode,

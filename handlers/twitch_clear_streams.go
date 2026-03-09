@@ -31,7 +31,7 @@ func (h *TwitchClearStreamsHandler) HandleEvent(event events.EventInterface) err
 	logger.Debug("🧹 Handling TwitchClearStreams command from user: %s", payload.Username)
 
 	removedCount := h.Service.ClearTwitchChannels()
-	response := fmt.Sprintf(constants.TwitchClearStreamsSuccess, removedCount)
+	response := fmt.Sprintf(constants.TwitchClearSuccess, removedCount)
 
 	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {

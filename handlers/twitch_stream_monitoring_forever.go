@@ -33,7 +33,7 @@ func (h *TwitchStreamMonitoringForeverHandler) HandleEvent(event events.EventInt
 
 	// Verifica se foi passado o argumento necessário (intervalo)
 	if len(payload.Arguments) != 1 {
-		err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, constants.TwitchStreamMonitoringForeverUsage)
+		err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, constants.TwitchStartForeverUsage)
 		if err != nil {
 			return errors.NewIntegration("failed to send response", err)
 		}
@@ -43,7 +43,7 @@ func (h *TwitchStreamMonitoringForeverHandler) HandleEvent(event events.EventInt
 	// Verifica se há canais adicionados
 	channels := h.Service.GetTwitchChannels()
 	if len(channels) == 0 {
-		err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, constants.TwitchNoChannelsAdded)
+		err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, constants.TwitchChannelsEmpty)
 		if err != nil {
 			return errors.NewIntegration("failed to send response", err)
 		}
@@ -63,7 +63,7 @@ func (h *TwitchStreamMonitoringForeverHandler) HandleEvent(event events.EventInt
 	// Inicia monitoramento infinito
 	err = h.Service.StartTwitchMonitoringForever(payload.ChannelID, interval)
 	if err != nil {
-		response := fmt.Sprintf(constants.TwitchStreamMonitoringError, err.Error())
+		response := fmt.Sprintf(constants.TwitchStartError, err.Error())
 		err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 		if err != nil {
 			return errors.NewIntegration("failed to send response", err)
@@ -72,7 +72,7 @@ func (h *TwitchStreamMonitoringForeverHandler) HandleEvent(event events.EventInt
 	}
 
 	// Resposta de sucesso
-	response := fmt.Sprintf(constants.TwitchStreamMonitoringForeverStarted, interval, len(channels))
+	response := fmt.Sprintf(constants.TwitchStartForeverSuccess, interval, len(channels))
 	err = h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {
 		return errors.NewIntegration("failed to send response", err)

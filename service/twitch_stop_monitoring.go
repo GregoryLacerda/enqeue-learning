@@ -19,6 +19,7 @@ func (s *Service) StopTwitchMonitoring() error {
 	}
 
 	s.twitchIsMonitoring = false
+	s.twitchCheckInterval = 0
 	logger.Info("🛑 Twitch monitoring stopped")
 
 	return nil

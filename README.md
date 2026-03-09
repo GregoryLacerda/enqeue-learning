@@ -61,6 +61,7 @@ ROUTING_KEY=discord.command
 # Optional (Twitch commands)
 TWITCH_CLIENT_ID=your_twitch_client_id
 TWITCH_CLIENT_SECRET=your_twitch_client_secret
+TWITCH_NOTIFY_MODE=always
 
 # Optional
 DEBUG_MODE=false
@@ -111,7 +112,9 @@ Examples:
 Notes:
 
 - Requires `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET`
-- Anti-spam cooldown for repeated notifications is enabled
+- Notification behavior is configurable with `TWITCH_NOTIFY_MODE`:
+- `always` sends notifications on every check interval
+- `cooldown` sends notifications based on the command `check_interval_minutes`
 - Only one monitoring process can run at a time
 - Slash command descriptions and option hints are shown directly in Discord while typing
 - `/twitch add` supports channel autocomplete while typing

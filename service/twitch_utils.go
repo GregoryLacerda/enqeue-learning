@@ -33,6 +33,7 @@ func (s *Service) monitorTwitchStreams(intervalMinutes int, forever bool) {
 		case <-s.twitchMonitoringCtx.Done():
 			s.twitchMu.Lock()
 			s.twitchIsMonitoring = false
+			s.twitchCheckInterval = 0
 			s.twitchMu.Unlock()
 
 			var reason string
@@ -84,13 +85,8 @@ func (s *Service) checkTwitchStreams() {
 
 	// Notifica sobre streams online
 	for _, stream := range streamsResponse.Data {
-		// Verifica se já notificou recentemente (evita spam)
-		s.twitchMu.RLock()
-		lastTime, exists := s.twitchLastNotified[stream.UserLogin]
-		s.twitchMu.RUnlock()
-
-		// Se já notificou há menos de 30 minutos, pula
-		if exists && time.Since(lastTime) < 30*time.Minute {
+		if s.shouldSkipTwitchNotification(stream.UserLogin) {
+			logger.Debug("⏭️ Notification skipped due to cooldown for channel: %s", stream.UserLogin)
 			continue
 		}
 
@@ -102,14 +98,42 @@ func (s *Service) checkTwitchStreams() {
 				logger.Warn("❌ Error sending notification: %v", err)
 			} else {
 				logger.Debug("✅ Notification sent for channel: %s", stream.UserLogin)
-
-				// Atualiza timestamp da última notificação
-				s.twitchMu.Lock()
-				s.twitchLastNotified[stream.UserLogin] = time.Now()
-				s.twitchMu.Unlock()
+				s.markTwitchNotification(stream.UserLogin)
 			}
 		}
 	}
+}
+
+func (s *Service) shouldSkipTwitchNotification(channel string) bool {
+	mode := s.config.TwitchConfig.NotifyMode
+	if mode != "cooldown" {
+		return false
+	}
+
+	s.twitchMu.RLock()
+	cooldown := s.twitchCheckInterval
+	s.twitchMu.RUnlock()
+
+	if cooldown <= 0 {
+		return false
+	}
+
+	s.twitchMu.RLock()
+	lastTime, exists := s.twitchLastNotified[channel]
+	s.twitchMu.RUnlock()
+
+	if !exists {
+		return false
+	}
+
+	return time.Since(lastTime) < cooldown
+}
+
+func (s *Service) markTwitchNotification(channel string) {
+	s.twitchMu.Lock()
+	defer s.twitchMu.Unlock()
+
+	s.twitchLastNotified[channel] = time.Now()
 }
 
 // formatTwitchStreamNotification formata a mensagem de notificação

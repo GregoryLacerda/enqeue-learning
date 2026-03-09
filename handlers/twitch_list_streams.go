@@ -33,7 +33,7 @@ func (h *TwitchListStreamsHandler) HandleEvent(event events.EventInterface) erro
 
 	channels := h.Service.ListTwitchChannels()
 	if len(channels) == 0 {
-		err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, constants.TwitchListStreamsEmpty)
+		err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, constants.TwitchListEmpty)
 		if err != nil {
 			return errors.NewIntegration("failed to send response", err)
 		}
@@ -41,7 +41,7 @@ func (h *TwitchListStreamsHandler) HandleEvent(event events.EventInterface) erro
 	}
 
 	formattedChannels := "- " + strings.Join(channels, "\n- ")
-	response := fmt.Sprintf(constants.TwitchListStreamsSuccess, len(channels), formattedChannels)
+	response := fmt.Sprintf(constants.TwitchListSuccess, len(channels), formattedChannels)
 
 	err := h.Discord.ReplyToMessage(payload.ChannelID, payload.MessageID, response)
 	if err != nil {

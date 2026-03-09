@@ -19,6 +19,7 @@ type Service struct {
 	twitchCancelFunc      context.CancelFunc
 	twitchIsMonitoring    bool
 	twitchNotifyChannelID string
+	twitchCheckInterval   time.Duration
 	twitchLastNotified    map[string]time.Time
 }
 

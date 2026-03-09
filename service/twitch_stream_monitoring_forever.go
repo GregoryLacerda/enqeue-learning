@@ -4,6 +4,7 @@ import (
 	"context"
 	"discordcommandbot/pkg/errors"
 	"discordcommandbot/pkg/logger"
+	"time"
 )
 
 // StartTwitchMonitoringForever inicia o monitoramento indefinidamente
@@ -21,6 +22,7 @@ func (s *Service) StartTwitchMonitoringForever(channelID string, intervalMinutes
 
 	s.twitchNotifyChannelID = channelID
 	s.twitchIsMonitoring = true
+	s.twitchCheckInterval = time.Duration(intervalMinutes) * time.Minute
 
 	// Cria contexto cancelável (sem timeout)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -29,6 +31,8 @@ func (s *Service) StartTwitchMonitoringForever(channelID string, intervalMinutes
 
 	logger.Info("🚀 Starting Twitch INFINITE monitoring: %d channels (interval: %d min)",
 		len(s.twitchChannels), intervalMinutes)
+	logger.Info("🔧 Twitch notify settings: mode=%s, effective_cooldown=%d min",
+		s.config.TwitchConfig.NotifyMode, intervalMinutes)
 
 	// Inicia goroutine de monitoramento
 	go s.monitorTwitchStreams(intervalMinutes, true)
